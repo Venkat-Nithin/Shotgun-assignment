@@ -40,6 +40,33 @@ async function joinRoom(roomId, socketId) {
   return roomData;
 }
 
+async function startSelection(roomId) {
+  const key = `${ROOM_PREFIX}${roomId}`;
+  const roomDataStr = await redisClient.get(key);
+  if (!roomDataStr) return null;
+
+  const roomData = JSON.parse(roomDataStr);
+  const players = [...roomData.players];
+
+  // Shuffle turn order
+  for (let i = players.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [players[i], players[j]] = [players[j], players[i]];
+  }
+
+  roomData.turnOrder = players;
+  roomData.currentTurnIndex = 0;
+  roomData.isSelectionStarted = true;
+
+  await redisClient.set(key, JSON.stringify(roomData));
+
+  return {
+    turnOrder: players,
+    currentTurnSocketId: players[0]
+  };
+}
+
+
 function generatePlayerPool() {
   // You can replace this with actual player names
   const players = [];
@@ -51,5 +78,6 @@ function generatePlayerPool() {
 
 module.exports = {
   createRoom,
-  joinRoom
+  joinRoom,
+  startSelection
 };
