@@ -11,8 +11,8 @@ function App() {
   const [mySocketId, setMySocketId] = useState(null);
   const [turnSocket, setTurnSocket] = useState(null);
   const [playerList, setPlayerList] = useState([]);
-  const [selected, setSelected] = useState([]); // all picked players
-  const [mySelected, setMySelected] = useState([]); // your team
+  const [selected, setSelected] = useState([]);
+  const [mySelected, setMySelected] = useState([]);
   const [selectionOver, setSelectionOver] = useState(false);
 
   const createRoom = () => {
@@ -40,7 +40,7 @@ function App() {
       return;
     }
 
-    setTurnSocket(null); // prevent double-clicks
+    setTurnSocket(null);
     socket.emit('select-player', { roomId: joinedRoom, playerName: player });
   };
 
