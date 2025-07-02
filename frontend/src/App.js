@@ -163,7 +163,7 @@ function App() {
 
           {mySelected.length > 0 && (
             <div style={{ marginTop: '2rem' }}>
-              <h4>📋 Your Selected Team:</h4>
+              <h4>Your Selected Team:</h4>
               <ul>
                 {mySelected.map((p, idx) => (
                   <li key={idx}>{p}</li>
