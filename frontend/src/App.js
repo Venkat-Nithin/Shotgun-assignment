@@ -36,7 +36,7 @@ function App() {
 
   const selectPlayer = (player) => {
     if (turnSocket !== mySocketId) {
-      alert("❌ It's not your turn!");
+      alert("It's not your turn yet!");
       return;
     }
 
@@ -51,7 +51,7 @@ function App() {
 
     socket.on('selection-started', ({ turnOrder, currentTurn }) => {
       alert(
-        `🎯 Selection Started!\n\nTurn Order:\n${turnOrder.join(
+        `Selection Started!\n\nTurn Order:\n${turnOrder.join(
           '\n'
         )}\n\nCurrent Turn:\n${currentTurn}`
       );
@@ -85,7 +85,7 @@ function App() {
     });
 
     socket.on('error-msg', (msg) => {
-      alert(`❌ Error: ${msg}`);
+      alert(`Error: ${msg}`);
     });
 
     setPlayerList(Array.from({ length: 50 }, (_, i) => `Player-${i + 1}`));
@@ -103,7 +103,7 @@ function App() {
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
-      <h1>🏏 Shotgun Team Selection</h1>
+      <h1>Fantasy Team Selection!</h1>
 
       {!joinedRoom ? (
         <>
@@ -123,7 +123,7 @@ function App() {
       ) : (
         <>
           <h3>
-            ✅ Joined Room: <code>{joinedRoom}</code>
+            You have joined: Room - <code>{joinedRoom}</code>
           </h3>
           <p>
             You are a <strong>{isHost ? 'Host' : 'Player'}</strong>
@@ -172,7 +172,7 @@ function App() {
             </div>
           )}
 
-          {selectionOver && <p>✅ Selection has ended for all players.</p>}
+          {selectionOver && <p>Selection has ended for all players.</p>}
         </>
       )}
     </div>
