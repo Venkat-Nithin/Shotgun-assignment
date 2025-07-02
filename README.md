@@ -3,7 +3,7 @@
 **Backend deployed link:** [https://shotgun-assignment.onrender.com](https://shotgun-assignment.onrender.com)  
 **Frontend deployed link:** [https://shotgun-assignment-67dg.vercel.app](https://shotgun-assignment-67dg.vercel.app)
 
-This is a eal-time multiplayer application built with **Express.js** and **Socket.IO** that simulates a turn-based team selection room. Multiple users can join a room and take turns selecting players from a common pool in a randomized draft-style format.
+This is a real-time multiplayer application built with **Express.js** and **Socket.IO** that simulates a turn-based team selection room. Multiple users can join a room and take turns selecting players from a common pool in a randomized draft-style format.
 
 ---
 
@@ -49,4 +49,3 @@ This is a eal-time multiplayer application built with **Express.js** and **Socke
 - Redis for persistent room state
 - Responsive UI (basic)
 
----
