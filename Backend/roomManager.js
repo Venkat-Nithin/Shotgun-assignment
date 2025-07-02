@@ -13,13 +13,13 @@ async function createRoom(hostSocketId) {
     playerData: {
       [hostSocketId]: {
         name: `User-${hostSocketId.slice(0, 5)}`,
-        selectedPlayers: []
-      }
+        selectedPlayers: [],
+      },
     },
     availablePlayers: generatePlayerPool(),
     turnOrder: [],
     currentTurnIndex: 0,
-    isSelectionStarted: false
+    isSelectionStarted: false,
   };
 
   await redisClient.set(`${ROOM_PREFIX}${roomId}`, JSON.stringify(roomData));
@@ -40,7 +40,7 @@ async function joinRoom(roomId, socketId) {
 
   roomData.playerData[socketId] = {
     name: `User-${socketId.slice(0, 5)}`,
-    selectedPlayers: []
+    selectedPlayers: [],
   };
 
   await redisClient.set(key, JSON.stringify(roomData));
@@ -68,12 +68,12 @@ async function startSelection(roomId) {
 
   return {
     turnOrder: players,
-    currentTurnSocketId: players[0]
+    currentTurnSocketId: players[0],
   };
 }
 
 async function handlePlayerSelection(roomId, socketId, selectedPlayer = null) {
-  const key = `room:${roomId}`;
+  const key = `${ROOM_PREFIX}${roomId}`;
   const roomStr = await redisClient.get(key);
   if (!roomStr) return { error: 'Room not found' };
 
@@ -94,7 +94,22 @@ async function handlePlayerSelection(roomId, socketId, selectedPlayer = null) {
   room.availablePlayers = playerPool.filter((p) => p !== player);
   room.playerData[socketId].selectedPlayers.push(player);
 
-  // Rotate turn to next player who hasn't finished
+  const selectionComplete = room.turnOrder.every(
+    (sid) => room.playerData[sid]?.selectedPlayers.length >= 5
+  );
+
+  if (selectionComplete) {
+    await redisClient.set(key, JSON.stringify(room));
+    return {
+      player,
+      by: socketId,
+      nextTurn: null,
+      selectionComplete: true,
+      updatedRoom: room,
+    };
+  }
+
+  // Rotate turn
   let totalTurns = room.turnOrder.length;
   let tries = 0;
 
@@ -106,32 +121,24 @@ async function handlePlayerSelection(roomId, socketId, selectedPlayer = null) {
     tries <= totalTurns
   );
 
-  const selectionComplete = room.turnOrder.every(
-    (sid) => room.playerData[sid]?.selectedPlayers.length >= 5
-  );
-
   await redisClient.set(key, JSON.stringify(room));
 
   return {
     player,
     by: socketId,
     nextTurn: room.turnOrder[room.currentTurnIndex],
-    selectionComplete,
-    updatedRoom: room
+    selectionComplete: false,
+    updatedRoom: room,
   };
 }
 
 function generatePlayerPool() {
-  const players = [];
-  for (let i = 1; i <= 50; i++) {
-    players.push(`Player-${i}`);
-  }
-  return players;
+  return Array.from({ length: 50 }, (_, i) => `Player-${i + 1}`);
 }
 
 module.exports = {
   createRoom,
   joinRoom,
   startSelection,
-  handlePlayerSelection
+  handlePlayerSelection,
 };

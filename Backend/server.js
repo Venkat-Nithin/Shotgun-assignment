@@ -3,6 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const redisClient = require('./redisClient');
 const { v4: uuidv4 } = require('uuid');
+require('dotenv').config();
 const {
   createRoom,
   joinRoom,
@@ -16,8 +17,11 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
+    origin: [
+      "http://localhost:3000",
+      "https://shotgun-assignment-1.onrender.com"
+    ],
+    methods: ["GET", "POST"]
   }
 });
 
@@ -27,15 +31,12 @@ app.get('/', (req, res) => {
   res.send('✅ Backend is up and running!');
 });
 
-
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 
 io.on('connection', (socket) => {
   console.log('🟢 Connected:', socket.id);
-
-  // Send socket ID to client
   socket.emit('you-are', socket.id);
 
   socket.on('create-room', async (callback) => {
@@ -67,7 +68,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('select-player', async ({ roomId, playerName }) => {
-    console.log(`[SERVER] select-player event from ${socket.id}, picking ${playerName} in room ${roomId}`);
+    console.log(`[SERVER] select-player from ${socket.id}, picking ${playerName} in ${roomId}`);
 
     const result = await handlePlayerSelection(roomId, socket.id, playerName);
     if (result.error) {
@@ -85,6 +86,8 @@ io.on('connection', (socket) => {
 
     if (result.selectionComplete || !result.nextTurn) {
       io.to(roomId).emit('selection-ended', result.updatedRoom);
+      clearTimeout(activeTimers[roomId]);
+      delete activeTimers[roomId];
     } else {
       const next = result.nextTurn;
       io.to(roomId).emit('turn-changed', next);
@@ -93,16 +96,13 @@ io.on('connection', (socket) => {
   });
 
   function startTurnTimer(roomId, turnSocketId) {
-    if (!turnSocketId) {
-      console.log(`[TIMER] Skipping timer for undefined socket (selection might be done)`);
-      return;
-    }
+    if (!turnSocketId) return;
 
-    console.log(`[TIMER] Starting turn timer for ${turnSocketId} in room ${roomId}`);
+    console.log(`[TIMER] Starting timer for ${turnSocketId} in ${roomId}`);
     activeTimers[roomId] = setTimeout(async () => {
       const autoResult = await handlePlayerSelection(roomId, turnSocketId);
       if (autoResult?.error) {
-        console.log(`[AUTO] Skipping turn: ${autoResult.error}`);
+        console.log(`[AUTO] Error: ${autoResult.error}`);
         return;
       }
 
@@ -113,6 +113,8 @@ io.on('connection', (socket) => {
 
       if (autoResult.selectionComplete || !autoResult.nextTurn) {
         io.to(roomId).emit('selection-ended', autoResult.updatedRoom);
+        clearTimeout(activeTimers[roomId]);
+        delete activeTimers[roomId];
       } else {
         const next = autoResult.nextTurn;
         io.to(roomId).emit('turn-changed', next);
