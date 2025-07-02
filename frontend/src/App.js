@@ -136,7 +136,7 @@ function App() {
               }
               style={{ marginTop: '1rem' }}
             >
-              🚀 Start Selection
+              Start Selection
             </button>
           )}
 
