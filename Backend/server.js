@@ -19,7 +19,7 @@ const io = new Server(server, {
   cors: {
     origin: [
       "http://localhost:3000", 
-      "https://shotgun-assignment-67dg.vercel.app", // ✅ your actual frontend on Vercel
+      "https://shotgun-assignment-67dg.vercel.app",
     ],
     methods: ["GET", "POST"],
     credentials: true
