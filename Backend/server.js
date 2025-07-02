@@ -3,7 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const redisClient = require('./redisClient');
 const { v4: uuidv4 } = require('uuid');
-const { createRoom, joinRoom } = require('./roomManager');
+const { createRoom, joinRoom, startSelection } = require('./roomManager');
 
 const app = express();
 const server = http.createServer(app);
@@ -19,6 +19,7 @@ const PORT = 4000;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
 
 io.on('connection', (socket) => {
   console.log('🟢 Connected:', socket.id);
@@ -37,5 +38,16 @@ io.on('connection', (socket) => {
     }
     socket.join(roomId);
     callback({ roomId, host: false });
+  });
+
+  socket.on('start-selection', async ({ roomId }) => {
+    const result = await startSelection(roomId);
+    if (!result) return;
+    
+    // Broadcast to everyone in the room
+    io.to(roomId).emit('selection-started', {
+      turnOrder: result.turnOrder,
+      currentTurn: result.currentTurnSocketId
+    });
   });
 });
