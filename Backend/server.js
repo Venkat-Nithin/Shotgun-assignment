@@ -18,10 +18,11 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: [
-      "http://localhost:3000",
-      "https://shotgun-assignment-1.onrender.com"
+      "http://localhost:3000", 
+      "https://shotgun-assignment-67dg.vercel.app", // ✅ your actual frontend on Vercel
     ],
-    methods: ["GET", "POST"]
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
